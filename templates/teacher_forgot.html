@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>忘記密碼</h2>
+  <p class="muted">輸入註冊時的 Email，我們會寄出重設連結（30 分鐘有效）。</p>
+
+  <form method="post">
+    <label>Email</label>
+    <input name="email" type="email" autocomplete="email" required>
+    <div class="row" style="margin-top:12px;">
+      <button class="btn" type="submit">寄出重設連結</button>
+    </div>
+  </form>
+
+  <form action="{{ url_for('teacher_login') }}" method="get" style="margin-top:10px;">
+    <button class="btn-muted" type="submit">回登入頁</button>
+  </form>
+</div>
+{% endblock %}

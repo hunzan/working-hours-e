@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>單位查詢頁</h2>
+  <form method="post">
+    <label>機構名稱（需與老師建立案件時一致）</label>
+    <input name="agency_name" required>
+
+    <label>學員姓名（需與老師建立案件時一致）</label>
+    <input name="student_name" required>
+
+    <label>查詢碼</label>
+    <input name="code" required>
+
+      <div class="row" style="margin-top:12px;">
+        <button class="btn" type="submit">查詢</button>
+      </div>
+    </form><br>
+    <!-- 回首頁必須是「另一個 form」，不能巢狀 -->
+    <form action="{{ url_for('index') }}" method="get">
+      <button class="btn2 back-btn" type="submit">回首頁</button>
+    </form>
+  </form>
+</div>
+
+{% if result %}
+<div class="card">
+  <h3>查詢結果</h3>
+  <p>
+    學員：{{ result.case.student_name }}｜
+    單位：{{ result.case.agency_name }}｜
+    年度：{{ result.case.fiscal_year }}｜
+    狀態：{{ "進行中" if result.case.status=="active" else "已結束" }}
+  </p>
+
+  <h4>項目摘要</h4>
+  <ul>
+    {% if result.services.get("orientation") %}
+      <li>定向：核給 {{ result.services["orientation"].granted_hours }}，已用 {{ result.used_o }}，剩餘 {{ result.remaining_o }}</li>
+    {% endif %}
+    {% if result.services.get("life") %}
+      <li>生活：核給 {{ result.services["life"].granted_hours }}，已用 {{ result.used_l }}，剩餘 {{ result.remaining_l }}</li>
+    {% endif %}
+  </ul>
+
+  <h4>上課明細</h4>
+  {% if not result.sessions %}
+    <p class="muted">尚無上課紀錄。</p>
+  {% else %}
+  <table>
+    <thead><tr><th>日期</th><th>定向時數</th><th>生活時數</th></tr></thead>
+    <tbody>
+      {% for s in result.sessions %}
+      <tr>
+        <td data-label="上課日期">{{ s.session_date }}</td>
+        <td data-label="定向時數">{{ s.hours_orientation }}</td>
+        <td data-label="生活時數">{{ s.hours_life }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

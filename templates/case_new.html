@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>新增案件</h2>
+  <form method="post">
+    <label>學員姓名</label>
+    <input name="student_name" required>
+
+    <label>派案單位（機構名稱）</label>
+    <input name="agency_name" required>
+
+    <label>年度（西元年）</label>
+    <input name="fiscal_year" type="number" value="{{ this_year }}" required>
+
+    <hr>
+
+    <label>
+      教學項目：定向<span class="muted">（有申請項目請點選小方框）</span>
+      <input type="checkbox" name="choose_orientation" style="transform: scale(1.5); margin-left:10px;">
+    </label>
+    <div class="row">
+      <div style="flex:1;">
+        <label>定向開始日期</label>
+        <input name="start_orientation" type="date" value="{{ this_year }}-01-01">
+      </div>
+      <div style="flex:1;">
+        <label>定向核給時數</label>
+        <input name="granted_orientation" type="number" step="0.5" value="0">
+      </div>
+    </div>
+
+    <label style="margin-top:10px;">
+      教學項目：生活<span class="muted">（有申請項目請點選小方框）</span>
+      <input type="checkbox" name="choose_life" style="transform: scale(1.5); margin-left:10px;">
+    </label>
+    <div class="row">
+      <div style="flex:1;">
+        <label>生活開始日期</label>
+        <input name="start_life" type="date" value="{{ this_year }}-01-01">
+      </div>
+      <div style="flex:1;">
+        <label>生活核給時數</label>
+        <input name="granted_life" type="number" step="0.5" value="0">
+      </div>
+    </div>
+
+      <div class="row">
+        <button class="btn" type="submit">建立案件並產生查詢碼</button>
+      </div>
+    </form><br>
+
+    <form action="{{ url_for('dashboard') }}" method="get">
+      <button class="btn2 back-btn" type="submit">取消</button>
+    </form>
+  </form>
+
+  <p class="muted">查詢碼只會在建立後顯示一次，請立刻複製提供給單位。</p>
+</div>
+{% endblock %}

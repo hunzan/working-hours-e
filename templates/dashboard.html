@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>老師：{{ teacher.full_name }}</h2>
+    <div class="row">
+      <form action="{{ url_for('case_new') }}" method="get">
+        <button class="btn" type="submit">新增案件</button>
+      </form>
+
+      <form action="{{ url_for('teacher_export', year=2026) }}" method="get">
+        <button class="btn-muted" type="submit">匯出年度 CSV</button>
+      </form>
+
+      <form action="{{ url_for('teacher_logout') }}" method="get">
+        <button class="btn2" type="submit">登出</button>
+      </form>
+    </div>
+  <p class="muted">提示：跨年度若要保留資料，請老師在年底自行匯出該年度 CSV 保存。</p>
+</div>
+
+<div class="card">
+  <h3>進行中</h3>
+  {% if not active_cases %}
+    <p class="muted">目前沒有進行中案件。</p>
+  {% else %}
+  <table>
+    <thead><tr><th>年度</th><th>學員</th><th>單位</th><th>項目</th><th></th></tr></thead>
+    <tbody>
+      {% for c in active_cases %}
+      <tr>
+        <td>{{ c.fiscal_year }}</td>
+        <td>{{ c.student_name }}</td>
+        <td>{{ c.agency_name }}</td>
+        <td>
+          {% for s in c.services %}
+            <span class="badge">{{ service_label(s.service_type) }}</span>
+          {% endfor %}
+        </td>
+        <td>
+          <form action="{{ url_for('case_detail', case_id=c.id) }}" method="get">
+            <button class="btn" type="submit">進入</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>已結束</h3>
+  {% if not closed_cases %}
+    <p class="muted">目前沒有已結束案件。</p>
+  {% else %}
+  <table>
+    <thead><tr><th>年度</th><th>學員</th><th>查詢碼提示</th><th>單位</th><th>項目</th><th></th></tr></thead>
+    <tbody>
+      {% for c in closed_cases %}
+      <tr>
+        <td>{{ c.fiscal_year }}</td>
+        <td>{{ c.student_name }}</td>
+        <td>{{ c.query_code_hint or "" }}</td>
+        <td>{{ c.agency_name }}</td>
+        <td>
+          {% for s in c.services %}
+            <span class="badge">{{ service_label(s.service_type) }}</span>
+          {% endfor %}
+        </td>
+        <td>
+          <form action="{{ url_for('case_detail', case_id=c.id) }}" method="get">
+            <button class="btn2 back-btn" type="submit">查看</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endblock %}

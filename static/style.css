@@ -1,0 +1,322 @@
+/* =========================
+   色系變數 + 尺寸變數
+========================= */
+:root {
+  --bg: #f7f8fa;
+  --card: #ffffff;
+  --primary: #2d6cdf;
+  --secondary: #00a0a6;
+  --danger: #e5533d;
+  --border: #d0d7e2;
+  --text: #222;
+  --muted: #666;
+
+  /* ✅ 統一按鈕文字大小（全站一致） */
+  --btn-font: 16px;
+  --btn-line: 1.2;
+}
+
+/* =========================
+   全站基本樣式
+========================= */
+body {
+  font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* 連結預設：一般連結才要底線，按鈕連結會另外處理 */
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+/* =========================
+   Layout
+========================= */
+header {
+  background: #111;
+  color: #fff;
+  padding: 12px 16px;
+}
+header a {
+  color: #fff;
+  text-decoration: none;
+  margin-right: 12px;
+}
+main {
+  padding: 16px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+/* =========================
+   卡片
+========================= */
+.card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.05);
+}
+
+/* =========================
+   表單（輸入欄位）
+========================= */
+label {
+  display: block;
+  margin: 8px 0 4px;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 20px; /* 手機避免縮放 */
+}
+
+/* =========================
+   ✅ 統一按鈕（button + 連結按鈕）
+========================= */
+button,
+a.btn, a.btn2, a.danger,
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;     /* 文字置中 */
+  text-align: center;
+
+  width: 100%;                 /* 手機整排好按 */
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: 10px;
+
+  border: 0;
+  cursor: pointer;
+
+  font-size: var(--btn-font);  /* ✅ 統一字體大小 */
+  line-height: var(--btn-line);
+  font-weight: 600;            /* ✅ 看起來一致、不會忽大忽小 */
+
+  text-decoration: none !important;
+  user-select: none;
+}
+
+/* 桌機按鈕不要整排撐寬 */
+@media (min-width: 768px) {
+  button,
+  a.btn, a.btn2, a.danger,
+  .back-btn {
+    width: auto;
+  }
+}
+
+/* 按鈕顏色 */
+.btn { background: var(--primary); color: #fff; }
+.btn2 { background: var(--secondary); color: #fff; }
+.danger { background: var(--danger); color: #fff; }
+
+/* hover/focus（桌機好用） */
+button:hover, a.btn:hover, a.btn2:hover, a.danger:hover, .back-btn:hover {
+  filter: brightness(0.98);
+  text-decoration: none !important;
+}
+button:focus, a.btn:focus, a.btn2:focus, a.danger:focus, .back-btn:focus {
+  outline: 2px solid rgba(45,108,223,.35);
+  outline-offset: 2px;
+}
+
+/* back-btn 保持與 btn2 一致：它只是回首頁用的連結按鈕 */
+.back-btn { }
+
+/* =========================
+   文字
+========================= */
+.muted {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eee;
+  margin-left: 6px;
+}
+
+/* =========================
+   Flash 訊息
+========================= */
+.flash {
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+.flash.success { background: #e7f7ed; }
+.flash.info    { background: #e8f1ff; }
+.flash.warning { background: #fff6d8; }
+.flash.danger  { background: #ffe8e8; }
+
+/* =========================
+   表格
+========================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  border-bottom: 1px solid #eee;
+  padding: 8px;
+  text-align: left;
+}
+
+/* =========================
+   Row (手機直排、桌機橫排)
+========================= */
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+@media (min-width: 768px) {
+  .row { flex-direction: row; }
+}
+
+/* =========================
+   首頁入口卡片
+========================= */
+.linkcard {
+  display: block;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  text-align: center;
+  color: var(--text) !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,.06);
+}
+.linkcard:hover,
+.linkcard:focus {
+  border-color: var(--primary);
+  box-shadow: 0 6px 16px rgba(0,0,0,.1);
+  outline: none;
+}
+.linkcard h2 { margin: 0 0 8px 0; }
+
+/* =========================
+   Dashboard 表格手機卡片化（不改 HTML）
+========================= */
+@media (max-width: 767px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+    width: 100%;
+  }
+  thead { display: none; }
+
+  tr {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+
+  td {
+    border: 0;
+    padding: 6px 0;
+  }
+
+  /* 最後一欄「進入/查看」變成按鈕 */
+  td:last-child a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 10px;
+
+    background: var(--primary);
+    color: #fff !important;
+    text-decoration: none !important;
+
+    width: 100%;
+    margin-top: 8px;
+
+    /* ✅ 字體也統一 */
+    font-size: var(--btn-font);
+    line-height: var(--btn-line);
+    font-weight: 600;
+  }
+
+  .badge {
+    margin-left: 0;
+    margin-right: 6px;
+    margin-top: 6px;
+  }
+}
+/* =========================
+   次要／系統操作按鈕（灰）
+========================= */
+.btn-muted {
+  background: #BEBEBE !important;   /* 平時就灰 */
+  color: #333 !important;
+}
+
+.btn-muted:hover {
+  background: #D0D0D0 !important;
+}
+
+.btn-muted:focus {
+  outline: 2px solid rgba(0,0,0,.2);
+}
+.row form { margin: 0; }
+/* 手機：表格卡片化時顯示欄位名稱（靠 data-label） */
+@media (max-width: 767px) {
+  td[data-label] {
+    display: grid;
+    grid-template-columns: 7em 1fr; /* 左標籤固定寬，右內容自適應 */
+    gap: 10px;
+    padding: 6px 0;
+  }
+
+  td[data-label]::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-weight: 600;
+  }
+}
+/* =========================
+   手機：表格卡片模式顯示欄位名稱（強制覆蓋版）
+========================= */
+@media (max-width: 767px) {
+
+  /* 讓有 data-label 的格子變成「左標籤 + 右內容」 */
+  td[data-label]{
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding: 6px 0 !important;
+  }
+
+  td[data-label]::before{
+    content: attr(data-label) !important;
+    flex: 0 0 7em !important;     /* 左邊標籤固定寬 */
+    color: var(--muted) !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+  }
+
+  /* 右側內容不要被擠爆 */
+  td[data-label] > *{
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}

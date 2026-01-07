@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>老師登入 / 註冊</h2>
+
+  <!-- 主登入/註冊表單 -->
+  <form method="post">
+    <label>老師姓名（全名）</label>
+    <input name="full_name" autocomplete="name" required>
+
+    <label>密碼</label>
+    <input name="password" type="password" autocomplete="current-password" required>
+    <div class="muted">
+      建議：8 碼以上，英數混合（例如 akau1234）或加符號更佳（例如 kimchio123!）。
+    </div>
+
+    <label>Email（忘記密碼用；註冊必填）</label>
+    <input id="email" name="email" type="email" autocomplete="email">
+    <div class="muted">登入可不填；註冊必填，用於忘記密碼自助重設。</div>
+
+    <div class="row" style="margin-top:12px;">
+      <!-- 登入：完全不被 email required 擋 -->
+      <button class="btn" name="action" value="login" type="submit" formnovalidate>登入</button>
+
+      <!-- 註冊：JS 會把 email 設成 required -->
+      <button class="btn-muted" name="action" value="signup" type="submit">註冊</button>
+    </div>
+  </form>
+
+  <!-- 回首頁用獨立 form，尺寸完全一樣，也不巢狀 -->
+  <form action="{{ url_for('index') }}" method="get" style="margin-top:8px;">
+    <button class="btn2" type="submit" style="width:100%;">回首頁</button>
+  </form>
+</div>
+
+<p class="muted" style="margin-top:10px;">
+  <a href="{{ url_for('teacher_forgot') }}">忘記密碼？用 Email 重設</a>
+</p>
+
+<script>
+  const email = document.getElementById('email');
+  const btnSignup = document.querySelector('button[name="action"][value="signup"]');
+  const btnLogin  = document.querySelector('button[name="action"][value="login"]');
+
+  btnSignup.addEventListener('click', () => email.required = true);
+  btnLogin.addEventListener('click',  () => email.required = false);
+</script>
+{% endblock %}

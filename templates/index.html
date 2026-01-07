@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>教學時數E指通</h1>
+  <p class="muted">老師端記錄每次上課日期與時數；單位端用查詢碼核對時數。</p>
+  <div class="row">
+    <a class="card" href="{{ url_for('teacher_login') }}" style="flex:1; text-align:center; text-decoration:none;">
+      <h2>老師頁</h2>
+      <div class="muted">登入 / 新增案件 / 記錄上課 / 匯出年度</div>
+    </a>
+    <a class="card" href="{{ url_for('lookup') }}" style="flex:1; text-align:center; text-decoration:none;">
+      <h2>單位查詢頁</h2>
+      <div class="muted">機構＋學員＋查詢碼 → 查上課明細</div>
+    </a>
+  </div>
+</div>
+{% endblock %}

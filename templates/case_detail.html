@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>案件：{{ case.student_name }} <span class="badge">{{ case.agency_name }}</span></h2>
+  <p class="muted">
+    年度：{{ case.fiscal_year }}｜狀態：{{ "進行中" if case.status=="active" else "已結束" }}
+    {% if case.query_code_hint %}｜查詢碼提示：{{ case.query_code_hint }}{% endif %}
+  </p>
+
+  <div class="card">
+    <h3>查詢碼管理</h3>
+    <p class="muted">
+      查詢碼提示：{{ case.query_code_hint or "（尚未設定）" }}
+      <br>需要完整查詢碼時，請輸入老師密碼後顯示（只顯示一次）。
+    </p>
+
+    <form method="post" class="row">
+      <input type="hidden" name="action" value="reveal_code">
+      <div style="flex:1; min-width:220px;">
+        <label>再輸入一次老師密碼</label>
+        <input name="password_confirm" type="password" required>
+      </div>
+      <div style="align-self:end;">
+        <button class="btn" type="submit">顯示查詢碼</button>
+      </div>
+    </form>
+
+    <p class="muted">你也可以用「重置查詢碼」直接發新碼給單位（舊碼立刻失效）。</p>
+  </div>
+
+  <h3>教學項目與剩餘</h3>
+  <ul>
+    {% if services.get("orientation") %}
+      <li>
+        定向：核給 {{ services["orientation"].granted_hours }}，已用 {{ used_o }}，剩餘 {{ remaining_o }}
+        <form method="post" style="margin-top:8px;">
+          <input type="hidden" name="action" value="update_granted">
+          <input type="hidden" name="service_type" value="orientation">
+          <label class="muted">修改定向核給時數</label>
+          <div class="row">
+            <div style="flex:1; min-width:160px;">
+              <input name="new_granted_hours" type="number" step="0.5"
+                     value="{{ services['orientation'].granted_hours }}">
+            </div>
+            <div>
+              <button class="btn2" type="submit">更新</button>
+            </div>
+          </div>
+        </form>
+      </li>
+    {% endif %}
+
+    {% if services.get("life") %}
+      <li style="margin-top:12px;">
+        生活：核給 {{ services["life"].granted_hours }}，已用 {{ used_l }}，剩餘 {{ remaining_l }}
+        <form method="post" style="margin-top:8px;">
+          <input type="hidden" name="action" value="update_granted">
+          <input type="hidden" name="service_type" value="life">
+          <label class="muted">修改生活核給時數</label>
+          <div class="row">
+            <div style="flex:1; min-width:160px;">
+              <input name="new_granted_hours" type="number" step="0.5"
+                     value="{{ services['life'].granted_hours }}">
+            </div>
+            <div>
+              <button class="btn2" type="submit">更新</button>
+            </div>
+          </div>
+        </form>
+      </li>
+    {% endif %}
+  </ul>
+
+  {% if one_time_code %}
+  <div class="flash success" id="oneTimeCodeBox">
+    查詢碼（只顯示一次）：<strong id="oneTimeCodeText">{{ one_time_code }}</strong>
+    <button class="btn" type="button" id="copyCodeBtn" style="margin-left:8px;">一鍵複製</button>
+    <div class="muted" id="copyHint" style="margin-top:6px;"></div>
+  </div>
+  <script>
+  (function () {
+    const code = document.getElementById('oneTimeCodeText')?.textContent?.trim();
+    const btn = document.getElementById('copyCodeBtn');
+    const hint = document.getElementById('copyHint');
+
+    async function doCopy() {
+      if (!code) return false;
+
+      // 1) 優先 Clipboard API（通常需 https/localhost，有時需手勢）
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(code);
+          hint.textContent = '已複製到剪貼簿。';
+          return true;
+        }
+      } catch (e) {}
+
+      // 2) fallback：execCommand（老派但在某些環境反而更靈）
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = code;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'absolute';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (ok) {
+          hint.textContent = '已複製到剪貼簿。';
+          return true;
+        }
+      } catch (e) {}
+
+      hint.textContent = '自動複製被瀏覽器擋下，請按「一鍵複製」。';
+      return false;
+    }
+
+    // 嘗試自動複製（失敗也沒關係，還有按鈕）
+    doCopy();
+
+    // 使用者手勢：按鈕複製（幾乎必成功）
+    btn.addEventListener('click', () => { doCopy(); });
+  })();
+  </script>
+{% endif %}
+
+  <div class="card">
+  <h3>項目管理（新增 / 刪除）</h3>
+
+  <div class="row">
+    {% if not services.get("orientation") %}
+    <form method="post" style="flex:1;">
+      <input type="hidden" name="action" value="add_service">
+      <input type="hidden" name="service_type" value="orientation">
+
+      <label>新增「定向」開始日</label>
+      <input name="start_orientation" type="date" value="{{ '' }}">
+
+      <label>新增「定向」核給時數</label>
+      <input name="granted_orientation" type="number" step="0.5" value="0">
+
+      <button class="btn" type="submit">新增定向</button>
+    </form>
+    {% endif %}
+
+    {% if not services.get("life") %}
+    <form method="post" style="flex:1;">
+      <input type="hidden" name="action" value="add_service">
+      <input type="hidden" name="service_type" value="life">
+
+      <label>新增「生活」開始日</label>
+      <input name="start_life" type="date" value="{{ '' }}">
+
+      <label>新增「生活」核給時數</label>
+      <input name="granted_life" type="number" step="0.5" value="0">
+
+      <button class="btn" type="submit">新增生活</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <hr>
+
+  <div class="row">
+      {% if services.get("orientation") %}
+      <form method="post" onsubmit="return confirm('確定刪除「定向」項目？（已有時數紀錄會禁止刪除）');">
+        <input type="hidden" name="action" value="remove_service">
+        <input type="hidden" name="service_type" value="orientation">
+        <button class="danger" type="submit">刪除⚠️「定向」項目</button>
+      </form>
+      {% endif %}
+
+      {% if services.get("life") %}
+      <form method="post" onsubmit="return confirm('確定刪除「生活」項目？（已有時數紀錄會禁止刪除）');">
+        <input type="hidden" name="action" value="remove_service">
+        <input type="hidden" name="service_type" value="life">
+        <button class="danger" type="submit">刪除⚠️「生活」項目</button>
+      </form>
+      {% endif %}
+    </div>
+
+    <p class="muted">若某項目已填過時數，系統會禁止刪除，避免對帳混亂。</p>
+  </div>
+
+  <div class="row">
+    <form method="post">
+      <button class="btn-muted" name="action" value="reset_code" type="submit">
+        重置查詢碼（只顯示一次）
+      </button>
+    </form>
+    <form method="post">
+      <button
+        name="action"
+        value="toggle_close"
+        type="submit"
+        class="{{ 'btn2' if case.status=='active' else 'btn-muted' }}">
+        {{ "手動結案" if case.status=="active" else "恢復為進行中" }}
+      </button>
+    </form>
+
+    <form method="post" onsubmit="return confirm('確定刪除整個案件？');">
+      <button class="danger" name="action" value="delete_case" type="submit">刪除案件</button>
+    </form>
+
+      <form action="{{ url_for('dashboard') }}" method="get" style="flex:1;">
+        <button class="btn back-btn" type="submit">回列表</button>
+      </form>
+  </div>
+</div>
+
+<div class="card">
+  <h3>新增上課紀錄</h3>
+  <form method="post">
+    <input type="hidden" name="action" value="add_session">
+    <div class="row">
+      <div style="flex:1;">
+        <label>上課日期</label>
+        <input name="session_date" type="date" value="{{ today }}">
+      </div>
+      <div style="flex:1;">
+        <label>定向時數（若未教定向可留 0）</label>
+        <input name="hours_orientation" type="number" step="0.5" value="0">
+      </div>
+      <div style="flex:1;">
+        <label>生活時數（若未教生活可留 0）</label>
+        <input name="hours_life" type="number" step="0.5" value="0">
+      </div>
+    </div>
+    <button class="btn" type="submit">新增上課記錄</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>上課明細</h3>
+  {% if not case.sessions %}
+    <p class="muted">尚無上課紀錄。</p>
+  {% else %}
+  <table>
+    <thead>
+      <tr><th>日期</th><th>定向時數</th><th>生活時數</th></tr>
+    </thead>
+    <tbody>
+      {% for s in case.sessions %}
+      <tr>
+        <td data-label="上課日期">{{ s.session_date }}</td>
+        <td data-label="定向時數">{{ s.hours_orientation }}</td>
+        <td data-label="生活時數">{{ s.hours_life }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+<script>
+(function () {
+  // 找到包含「查詢碼（只顯示一次」的 flash
+  const flashes = Array.from(document.querySelectorAll('.flash'));
+  const target = flashes.find(el => (el.textContent || '').includes('查詢碼（只顯示一次'));
+  if (!target) return;
+
+  // 從字串取出最後的查詢碼（你 flash 格式是：...：XXXX）
+  const text = (target.textContent || '').trim();
+  const parts = text.split('：');
+  if (parts.length < 2) return;
+  const code = parts[parts.length - 1].trim();
+
+  // 自動複製
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => {
+      // 你要更明顯可以加提示，但現在先低調
+    }).catch(() => {});
+  }
+})();
+</script>
+{% endblock %}
