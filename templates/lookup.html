@@ -3,10 +3,10 @@
 <div class="card">
   <h2>單位查詢頁</h2>
   <form method="post">
-    <label>機構名稱（需與老師建立案件時一致）</label>
+    <label>單位名稱</label>
     <input name="agency_name" required>
 
-    <label>學員姓名（需與老師建立案件時一致）</label>
+    <label>服務對象姓名（請輸入全名）</label>
     <input name="student_name" required>
 
     <label>查詢碼</label>
@@ -27,7 +27,7 @@
 <div class="card">
   <h3>查詢結果</h3>
   <p>
-    學員：{{ result.case.student_name }}｜
+    服務對象：{{ result.case.student_name }}｜
     單位：{{ result.case.agency_name }}｜
     年度：{{ result.case.fiscal_year }}｜
     狀態：{{ "進行中" if result.case.status=="active" else "已結束" }}

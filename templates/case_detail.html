@@ -11,13 +11,13 @@
     <h3>查詢碼管理</h3>
     <p class="muted">
       查詢碼提示：{{ case.query_code_hint or "（尚未設定）" }}
-      <br>需要完整查詢碼時，請輸入老師密碼後顯示（只顯示一次）。
+      <br>需要完整查詢碼時，請輸入用戶密碼後顯示（只顯示一次）。
     </p>
 
     <form method="post" class="row">
       <input type="hidden" name="action" value="reveal_code">
       <div style="flex:1; min-width:220px;">
-        <label>再輸入一次老師密碼</label>
+        <label>再輸入一次用戶密碼</label>
         <input name="password_confirm" type="password" required>
       </div>
       <div style="align-self:end;">
@@ -28,7 +28,7 @@
     <p class="muted">你也可以用「重置查詢碼」直接發新碼給單位（舊碼立刻失效）。</p>
   </div>
 
-  <h3>教學項目與剩餘</h3>
+  <h3>工作項目與剩餘</h3>
   <ul>
     {% if services.get("orientation") %}
       <li>

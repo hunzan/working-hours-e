@@ -23,7 +23,7 @@ def current_teacher():
 
 def require_login():
     if not current_teacher():
-        flash("請先登入老師帳號。", "warning")
+        flash("請先登入用戶帳號。", "warning")
         return redirect(url_for("teacher_login"))
     return None
 
@@ -86,7 +86,7 @@ def create_app():
     # ROUTES START
     # =========================
     # -------------------------
-    # 老師：登入/註冊（同頁）
+    # 用戶：登入/註冊（同頁）
     # -------------------------
     @app.route("/teacher/login", methods=["GET", "POST"])
     def teacher_login():
@@ -96,7 +96,7 @@ def create_app():
             action = request.form.get("action")  # login / signup
 
             if not full_name or not password:
-                flash("請輸入老師全名與密碼。", "danger")
+                flash("請輸入用戶全名與密碼。", "danger")
                 return redirect(url_for("teacher_login"))
 
             t = Teacher.query.filter_by(full_name=full_name).first()
@@ -114,7 +114,7 @@ def create_app():
                     return redirect(url_for("teacher_login"))
 
                 if t:
-                    flash("此老師名稱已存在，請改用登入。", "warning")
+                    flash("此用戶名稱已存在，請改用登入。", "warning")
                     return redirect(url_for("teacher_login"))
 
                 t = Teacher(
@@ -161,7 +161,7 @@ def create_app():
                 reset_link = url_for("teacher_reset", token=token, _external=True)
 
                 msg = Message(
-                    subject="教學時數E指通：重設密碼連結（30 分鐘有效）",
+                    subject="工作時數E指通：重設密碼連結（30 分鐘有效）",
                     recipients=[email],
                     body=f"請點擊以下連結重設密碼（30 分鐘內有效）：\n{reset_link}\n\n若你未申請重設，請忽略此信。",
                 )
@@ -216,7 +216,7 @@ def create_app():
         return render_template("teacher_reset.html")
 
     # -------------------------
-    # 老師：儀表板（進行中 / 已結束）
+    # 用戶：儀表板（進行中 / 已結束）
     # -------------------------
     @app.get("/teacher/dashboard")
     def dashboard():
@@ -238,7 +238,7 @@ def create_app():
         )
 
     # -------------------------
-    # 老師：新增案件（學員＋單位＋年度＋項目）
+    # 用戶：新增案件（服務對象＋單位＋年度＋項目）
     # 一案一碼：定向/生活不分碼
     # -------------------------
     @app.route("/teacher/cases/new", methods=["GET", "POST"])
@@ -257,11 +257,11 @@ def create_app():
             choose_life = request.form.get("choose_life") == "on"
 
             if not student_name or not agency_name:
-                flash("請輸入學員姓名與派案單位。", "danger")
+                flash("請輸入服務對象姓名與派案單位。", "danger")
                 return redirect(url_for("case_new"))
 
             if not (choose_orientation or choose_life):
-                flash("請至少勾選一個教學項目（定向或生活）。", "danger")
+                flash("請至少勾選一個工作項目（定向或生活）。", "danger")
                 return redirect(url_for("case_new"))
 
             # 產生查詢碼（只顯示一次）
@@ -317,7 +317,7 @@ def create_app():
         return render_template("case_new.html", this_year=date.today().year)
 
     # -------------------------
-    # 老師：案件詳情（新增上課、手動結案、重置查詢碼）
+    # 用戶：案件詳情（新增上課、手動結案、重置查詢碼）
     # -------------------------
     @app.route("/teacher/cases/<int:case_id>", methods=["GET", "POST"])
     def case_detail(case_id):
@@ -411,7 +411,7 @@ def create_app():
             if action == "update_granted":
                 service_type = request.form.get("service_type")
                 if service_type not in services:
-                    flash("找不到該教學項目，無法修改。", "danger")
+                    flash("找不到該工作項目，無法修改。", "danger")
                     return redirect(url_for("case_detail", case_id=case_id))
 
                 raw = request.form.get("new_granted_hours")
@@ -532,7 +532,7 @@ def create_app():
         )
 
     # -------------------------
-    # 老師：年度匯出 CSV（跨年度老師自己下載保存）
+    # 用戶：年度匯出 CSV（跨年度用戶自己下載保存）
     # -------------------------
     @app.get("/teacher/export")
     def teacher_export():
@@ -551,7 +551,7 @@ def create_app():
         output = io.StringIO()
         writer = csv.writer(output)
         writer.writerow([
-            "年度", "老師", "學員", "單位", "狀態",
+            "年度", "用戶", "服務對象", "單位", "狀態",
             "項目", "開始日", "核給時數",
             "上課日期", "定向時數", "生活時數",
         ])
@@ -594,11 +594,11 @@ def create_app():
         mem.write(output.getvalue().encode("utf-8-sig"))
         mem.seek(0)
 
-        filename = f"教學時數E指通_{t.full_name}_{year}.csv"
+        filename = f"工作時數E指通_{t.full_name}_{year}.csv"
         return send_file(mem, as_attachment=True, download_name=filename, mimetype="text/csv")
 
     # -------------------------
-    # 單位查詢：機構名稱＋學員姓名＋查詢碼
+    # 單位查詢：單位名稱＋服務對象姓名＋查詢碼
     # -------------------------
     @app.route("/lookup", methods=["GET", "POST"])
     def lookup():
@@ -609,7 +609,7 @@ def create_app():
             code = (request.form.get("code") or "").strip().upper()
 
             if not agency_name or not student_name or not code:
-                flash("請輸入機構名稱、學員姓名與查詢碼。", "danger")
+                flash("請輸入單位名稱、服務對象姓名與查詢碼。", "danger")
                 return redirect(url_for("lookup"))
 
             # 清理輸入（先做！）

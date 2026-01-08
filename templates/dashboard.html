@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="card">
-  <h2>老師：{{ teacher.full_name }}</h2>
+  <h2>用戶：{{ teacher.full_name }}</h2>
     <div class="row">
       <form action="{{ url_for('case_new') }}" method="get">
         <button class="btn" type="submit">新增案件</button>
@@ -15,7 +15,7 @@
         <button class="btn2" type="submit">登出</button>
       </form>
     </div>
-  <p class="muted">提示：跨年度若要保留資料，請老師在年底自行匯出該年度 CSV 保存。</p>
+  <p class="muted">提示：跨年度若要保留資料，請用戶在年底自行匯出該年度 CSV 保存。</p>
 </div>
 
 <div class="card">
@@ -24,7 +24,7 @@
     <p class="muted">目前沒有進行中案件。</p>
   {% else %}
   <table>
-    <thead><tr><th>年度</th><th>學員</th><th>單位</th><th>項目</th><th></th></tr></thead>
+    <thead><tr><th>年度</th><th>服務對象</th><th>單位</th><th>項目</th><th></th></tr></thead>
     <tbody>
       {% for c in active_cases %}
       <tr>
@@ -54,7 +54,7 @@
     <p class="muted">目前沒有已結束案件。</p>
   {% else %}
   <table>
-    <thead><tr><th>年度</th><th>學員</th><th>查詢碼提示</th><th>單位</th><th>項目</th><th></th></tr></thead>
+    <thead><tr><th>年度</th><th>服務對象</th><th>查詢碼提示</th><th>單位</th><th>項目</th><th></th></tr></thead>
     <tbody>
       {% for c in closed_cases %}
       <tr>
