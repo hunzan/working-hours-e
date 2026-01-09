@@ -1,4 +1,4 @@
-import os, io, csv
+import os, io, csv, requests
 from datetime import date, datetime
 
 from flask import Flask, render_template, request, redirect, url_for, session as flask_session, flash, send_file
@@ -27,6 +27,32 @@ def require_login():
         return redirect(url_for("teacher_login"))
     return None
 
+def send_reset_email(to_email: str, subject: str, body: str):
+    api_key = os.environ.get("SENDGRID_API_KEY")
+    mail_from = os.environ.get("MAIL_FROM")
+
+    if not api_key or not mail_from:
+        raise RuntimeError("Missing SENDGRID_API_KEY or MAIL_FROM")
+
+    payload = {
+        "personalizations": [{"to": [{"email": to_email}]}],
+        "from": {"email": mail_from},
+        "subject": subject,
+        "content": [{"type": "text/plain", "value": body}],
+    }
+
+    r = requests.post(
+        "https://api.sendgrid.com/v3/mail/send",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json=payload,
+        timeout=10,
+    )
+
+    if r.status_code >= 400:
+        raise RuntimeError(f"SendGrid error {r.status_code}: {r.text[:200]}")
 
 def create_app():
     app = Flask(__name__)
@@ -166,11 +192,15 @@ def create_app():
                     body=f"請點擊以下連結重設密碼（30 分鐘內有效）：\n{reset_link}\n\n若你未申請重設，請忽略此信。",
                 )
                 try:
-                    mail.send(msg)
-                    print("✅ mail.send OK ->", email)
+                    send_reset_email(
+                        email,
+                        "工作時數 E 指通：重設密碼連結（30 分鐘有效）",
+                        f"請點擊以下連結重設密碼（30 分鐘內有效）：\n{reset_link}\n\n若你未申請重設，請忽略此信。"
+                    )
+                    print("✅ SendGrid OK ->", email)
                 except Exception as e:
-                    print("❌ mail.send FAILED:", repr(e))
-                    flash("寄信失敗（請看後端 console 錯誤訊息）。", "danger")
+                    print("❌ SendGrid FAILED:", repr(e))
+                    flash("寄信失敗，請稍後再試或聯絡管理員。", "danger")
 
             flash("若此 Email 已註冊，系統會寄出重設密碼連結。請查看收件匣/垃圾郵件。", "info")
             return redirect(url_for("teacher_login"))

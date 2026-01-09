@@ -4,3 +4,4 @@ Flask-Mail==0.9.1
 cryptography==42.0.8
 Werkzeug
 gunicorn
+requests
