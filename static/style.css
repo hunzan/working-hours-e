@@ -138,7 +138,7 @@ button:focus, a.btn:focus, a.btn2:focus, a.danger:focus, .back-btn:focus {
 ========================= */
 .muted {
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 1.0rem;
 }
 
 .badge {
