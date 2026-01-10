@@ -11,6 +11,13 @@ class Teacher(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
+    last_login_at = db.Column(db.DateTime, nullable=True)
+    reset_count_year = db.Column(db.Integer, default=0, nullable=False)
+    reset_count_year_tag = db.Column(db.Integer, default=datetime.utcnow().year, nullable=False)
+
+    last_login_at = db.Column(db.DateTime, nullable=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+
     cases = db.relationship("Case", backref="teacher", cascade="all, delete-orphan")
 
 class Case(db.Model):

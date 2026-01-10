@@ -22,6 +22,12 @@ def current_teacher():
 
 
 def require_login():
+    t = current_teacher()
+    if not t or (hasattr(t, "is_active") and not t.is_active):
+        flask_session.pop("teacher_id", None)
+        flash("此帳號已停用（長期未登入）。請用忘記密碼/聯絡管理者恢復。", "warning")
+        return redirect(url_for("teacher_login"))
+
     if not current_teacher():
         flash("請先登入用戶帳號。", "warning")
         return redirect(url_for("teacher_login"))
@@ -136,14 +142,15 @@ def create_app():
 
             t = Teacher.query.filter_by(full_name=full_name).first()
 
+            # -------------------
+            # signup
+            # -------------------
             if action == "signup":
                 email = (request.form.get("email") or "").strip().lower()
-
                 if not email:
                     flash("註冊需要 Email（忘記密碼用）。", "danger")
                     return redirect(url_for("teacher_login"))
 
-                # Email 不能重複（建議）
                 if Teacher.query.filter_by(email=email).first():
                     flash("此 Email 已註冊，請改用登入或忘記密碼。", "warning")
                     return redirect(url_for("teacher_login"))
@@ -155,15 +162,19 @@ def create_app():
                 t = Teacher(
                     full_name=full_name,
                     email=email,
-                    password_hash=generate_password_hash(password)
+                    password_hash=generate_password_hash(password),
+                    last_login_at=datetime.utcnow(),
                 )
                 db.session.add(t)
                 db.session.commit()
+
                 flask_session["teacher_id"] = t.id
                 flash("註冊成功，已登入。", "success")
                 return redirect(url_for("dashboard"))
 
+            # -------------------
             # login
+            # -------------------
             if not t:
                 flash("您尚未註冊，請先註冊再登入。", "warning")
                 return redirect(url_for("teacher_login"))
@@ -173,6 +184,9 @@ def create_app():
                 return redirect(url_for("teacher_login"))
 
             flask_session["teacher_id"] = t.id
+            t.last_login_at = datetime.utcnow()
+            db.session.commit()
+
             flash("登入成功。", "success")
             return redirect(url_for("dashboard"))
 
@@ -188,29 +202,54 @@ def create_app():
     def teacher_forgot():
         if request.method == "POST":
             email = (request.form.get("email") or "").strip().lower()
+            if not email:
+                flash("請輸入 Email。", "danger")
+                return redirect(url_for("teacher_forgot"))
 
-            # 不管有沒有這個 email，都回同樣訊息（避免被探測帳號）
+            # ✅ 先查出老師（才能做年度計數）
             t = Teacher.query.filter_by(email=email).first()
+
             if t:
+                now_year = datetime.utcnow().year
+
+                # 年度標籤不一樣 → 代表跨年，歸零
+                if t.reset_count_year_tag != now_year:
+                    t.reset_count_year = 0
+                    t.reset_count_year_tag = now_year
+
+                # ✅ 每年限制（你之後可調整數字）
+                LIMIT_PER_YEAR = 3
+                if t.reset_count_year >= LIMIT_PER_YEAR:
+                    # 仍然回同樣訊息（避免被探測），但不寄信
+                    flash("若此 Email 已註冊，系統會寄出重設密碼連結。請查看收件匣/垃圾郵件。", "info")
+                    return redirect(url_for("teacher_login"))
+
+                # ✅ 計數 +1
+                t.reset_count_year += 1
+                db.session.commit()
+
+                # 產生 token / link
                 token = serializer.dumps({"tid": t.id}, salt="pw-reset")
                 reset_link = url_for("teacher_reset", token=token, _external=True)
 
-                msg = Message(
-                    subject="工作時數E指通：重設密碼連結（30 分鐘有效）",
-                    recipients=[email],
-                    body=f"請點擊以下連結重設密碼（30 分鐘內有效）：\n{reset_link}\n\n若你未申請重設，請忽略此信。",
+                subject = "工作時數 E 指通：重設密碼連結（30 分鐘有效）"
+                body = (
+                    "請點擊以下連結重設密碼（30 分鐘內有效）：\n"
+                    f"{reset_link}\n\n"
+                    "若你未申請重設，請忽略此信。"
                 )
-                try:
-                    send_reset_email(
-                        email,
-                        "工作時數 E 指通：重設密碼連結（30 分鐘有效）",
-                        f"請點擊以下連結重設密碼（30 分鐘內有效）：\n{reset_link}\n\n若你未申請重設，請忽略此信。"
-                    )
-                    print("✅ SendGrid OK ->", email)
-                except Exception as e:
-                    print("❌ SendGrid FAILED:", repr(e))
-                    flash("寄信失敗，請稍後再試或聯絡管理員。", "danger")
 
+                try:
+                    send_reset_email(email, subject, body)
+                    print("✅ reset email sent ->", email)
+                except Exception as e:
+                    print("❌ reset email FAILED:", repr(e))
+                    # 注意：這裡若顯示「寄信失敗」，其實會洩漏「這個 email 真的存在」
+                    # 所以建議不要 flash danger，仍然回同樣訊息
+                    # （真的要提示，可以只提示「系統忙碌」但不說寄信）
+                    pass
+
+            # ✅ 不管 t 存不存在，都回同樣訊息
             flash("若此 Email 已註冊，系統會寄出重設密碼連結。請查看收件匣/垃圾郵件。", "info")
             return redirect(url_for("teacher_login"))
 
